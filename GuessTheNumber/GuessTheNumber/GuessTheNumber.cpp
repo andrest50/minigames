@@ -5,14 +5,15 @@
 
 using namespace std;
 
-void setAnswer(int &);
-void run(int, char);
+void setAnswer(int &, int &);
+void run(int, char, int);
 void setType(char &);
 
 int main()
 {
 	int answer = 0;
 	int again = 0;
+	int randomNumMax = 0;
 	char type;
 
 	srand(time(NULL));
@@ -21,9 +22,9 @@ int main()
 	{
 		cout << "Welcome to Guess the Number!" << endl;
 		cout << "Try to guess the number in as few guesses as possible." << endl;
-		setAnswer(answer);
+		setAnswer(answer, randomNumMax);
 		setType(type);
-		run(answer, type);
+		run(answer, type, randomNumMax);
 		cout << "Do you want to play again? (1 - yes, 2 - no)" << endl;
 		cin >> again;
 	} while (again == 1);
@@ -47,16 +48,15 @@ void setType(char &type)
 	}
 }
 
-void setAnswer(int &value)
+void setAnswer(int &value, int &randomNumMax)
 {
-	int randomNumMax;
 	cout << "-------------------------------------------" << endl;
 	cout << "Up to what number do you want randomized?" << endl;
 	cin >> randomNumMax;
 	value = rand() % randomNumMax + 1;
 }
 
-void run(int answer, char type)
+void run(int answer, char type, int randomNumMax)
 {
 	int guess = 1;
 	int numGuesses = 0;
@@ -72,16 +72,16 @@ void run(int answer, char type)
 			cout << "Correct! It took you " << numGuesses << " guesses." << endl;
 			cout << "-------------------------------------------" << endl;
 		}
-		else if (abs(answer - guess) <= 5)
-			cout << "Very warm (5 or less off)" << endl;
-		else if (abs(answer - guess) <= 10)
-			cout << "Warm (6 - 10 off)" << endl;
-		else if (abs(answer - guess) <= 25)
-			cout << "Somewhat warm (11 - 25 off)" << endl;
-		else if (abs(answer - guess) <= 40)
-			cout << "Cool (26 - 40 off)" << endl;
+		else if (((float)abs(answer - guess)/randomNumMax)*100 <= 5)
+			cout << "Very warm (" << randomNumMax * 0.05 << " or less off)" << endl;
+		else if (((float)abs(answer - guess)/randomNumMax)*100 <= 10)
+			cout << "Warm (" << randomNumMax * 0.06 << " - " << randomNumMax * 0.10 << " or less off)" << endl;
+		else if (((float)abs(answer - guess)/randomNumMax)*100 <= 25)
+			cout << "Somewhat warm (" << randomNumMax * 0.11 << " - " << randomNumMax * 0.25 << " or less off)" << endl;
+		else if (((float)abs(answer - guess)/randomNumMax)*100 <= 40)
+			cout << "Cool (" << randomNumMax * 0.26 << " - " << randomNumMax * 0.40 << " or less off)" << endl;
 		else
-			cout << "Very cold (over 40 off)" << endl;
+			cout << "Very cold (over " << randomNumMax * 0.40 << " off)" << endl;
 		if (type == 'y' && answer != guess)
 		{
 			if (answer > guess)
