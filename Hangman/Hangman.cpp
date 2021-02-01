@@ -112,7 +112,11 @@ void player_choice(int &choice)
 
 void check_win(string word, string guess_word, bool &won)
 {
-	if (guess_word == word)
+	string correct_word = "";
+	for(char letter : word){
+		correct_word += tolower(letter);
+	}
+	if (guess_word == correct_word)
 		won = true;
 }
 
@@ -123,7 +127,7 @@ void guess_letter(string word, string &redacted_word, bool &won, int &guesses)
 	cout << "Letter you are guessing: " << endl;
 	cin >> letter;
 	for (int i = 0; i < word.length(); i++) {
-		if (letter == word.at(i)) {
+		if (letter == tolower(word.at(i))) {
 			redacted_word.at(i) = letter;
 			matches++;
 		}
