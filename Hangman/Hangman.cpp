@@ -1,9 +1,23 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+
+#define NUM_GUESSES 6
+
 using namespace std;
 
-void get_word(string &);
+void clear(int);
+void displayWords(string, fstream&);
+int useWord(string&, fstream&);
+int makeWord(string&);
+void getWord(string&);
+void eraseWord(string, string&);
+void playerChoice(int&);
+void checkWin(string, string, bool&);
+void guessWord(string, string &, bool&, int&);
+void resetVariables(int&, bool&);
+void playAgain(int&);
+void startGame();
 
 void clear(int spaces)
 {
@@ -11,98 +25,116 @@ void clear(int spaces)
 		cout << endl;
 }
 
-void display_words(string word, int number_of_lines, fstream &myfile)
+void displayWords(string word, fstream &myfile)
 {
-	myfile.open("words.txt");
-	for (int i = 1; i <= number_of_lines; i++) {
-		getline(myfile, word);
-		cout << "Word " << i << ": " << word << endl;
+	myfile.seekg(0);
+	int count = 1;
+	while(getline(myfile, word)) {
+		cout << "Word " << count << ": " << word << endl;
+		count++;
 	}
 	cout << "Return: 0" << endl;
-	myfile.close();
 }
 
-void use_word(string &word, int number_of_lines, fstream &myfile)
+int useWord(string &word, fstream &myfile)
 {
 	int choice;
-	display_words(word, number_of_lines, myfile);
+	displayWords(word, myfile);
+	myfile.clear();
+	myfile.seekg(0);
 	cout << "Which word do you want to use?" << endl;
 	cin >> choice;
-	myfile.open("words.txt");
 	for (int i = 0; i < choice; i++){
 		getline(myfile, word);
 		if(!isalpha(word[word.length()-1]))
 			word.erase(word.end()-1);
 	}
+
 	if (choice != 0)
 		clear(50);
 	else
-		get_word(word);
-	myfile.close();
+		return 0;
+	return 1;
 }
 
-void make_word(string &word, fstream &myfile)
+int makeWord(string &word)
 {
 	int choice;
 	cin.ignore();
-	myfile.open("words.txt", std::ofstream::app);
-	if (myfile.is_open())
-	{
-		cout << "What word would you like the player to guess: ";
-		getline(cin, word);
-		while(true){
-			cout << "Do you want to save this word? (1) yes (2) no" << endl;
-			cin >> choice;
-			if(!cin){
-				cin.clear();
-				cin.ignore();
-			}
-			else
-				break;
+	cout << "What word would you like the player to guess: " << endl;
+	getline(cin, word);
+	while(true){
+		cout << "Do you want to save this word? (1) yes (2) no" << endl;
+		cin >> choice;
+		if(!cin){
+			cin.clear();
+			cin.ignore();
 		}
-		clear(50);
-		if (choice == 1)
-			myfile << "\n" << word;
+		else
+			break;
 	}
-	else
-		cout << "Couldn't open the file" << endl;
+	if (choice == 1){
+		string file_name;
+		cout << "What is the name of the file?" << endl;
+		cin.ignore();
+		getline(cin, file_name);
+		fstream myfile(file_name, std::fstream::app);
+		if(myfile.is_open()){
+			myfile << "\n" << word;
+			myfile.close();
+		}
+		else {
+			cout << "File could not be opened!" << endl;
+		}	
+	}
+	clear(50);
+	return 1;
 }
 
-void get_word(string &word)
+void getWord(string &word)
 {
 	int choice;
-	int number_of_lines = 0;
-	string word_of_line = " ";
-	cout << "How would you like to get the word?" << endl;
-	cout << "(1) Read a text file" << endl;
-	cout << "(2) Type it out" << endl;
-	cin >> choice;
+	int valid = 0;
+	string file_name;
 
-	fstream myfile("words.txt");
-	while (getline(myfile, word)) {
-		++number_of_lines;
-	}
-	myfile.close();
+	while(valid == 0){
+		cout << "How would you like to get the word?" << endl;
+		cout << "(1) Read a text file" << endl;
+		cout << "(2) Type it out" << endl;
+		cin >> choice;
 
-	switch (choice)
-	{
-	case 1:
-		use_word(word, number_of_lines, myfile);
-		break;
-	case 2:
-		make_word(word, myfile);
-		break;
-	}
+			switch (choice)
+			{
+			case 1:
+			{
+				cout << "What is the name of the file?" << endl;
+				cin.ignore();
+				getline(cin, file_name);
+				fstream myfile(file_name);
+				if(myfile.is_open()){
+					valid = useWord(word, myfile);
+				}
+				else {
+					cout << "File could not be opened!" << endl;
+				}
+				myfile.close();
+				break;
+			}
+			case 2:
+				valid = makeWord(word);
+				break;
+			}
+		}
 }
 
-void erase_word(string word, string &redacted_word)
+void eraseWord(string word, string &redacted_word)
 {
 	redacted_word = word;
 	for (int i = 0; i < redacted_word.length(); i++)
 		redacted_word.at(i) = '-';
 }
 
-void player_choice(int &choice)
+void playerChoice(int &choice)
 {
 	cout << "What do you want to do?" << endl;
 	cout << "(1) Guess letter" << endl;
@@ -110,17 +142,17 @@ void player_choice(int &choice)
 	cin >> choice;
 }
 
-void check_win(string word, string guess_word, bool &won)
+void checkWin(string word, string guessWord, bool &won)
 {
 	string correct_word = "";
 	for(char letter : word){
 		correct_word += tolower(letter);
 	}
-	if (guess_word == correct_word)
+	if (guessWord == correct_word)
 		won = true;
 }
 
-void guess_letter(string word, string &redacted_word, bool &won, int &guesses)
+void guessLetter(string word, string &redacted_word, bool &won, int &guesses)
 {
 	char letter = ' ';
 	int matches = 0;
@@ -132,7 +164,7 @@ void guess_letter(string word, string &redacted_word, bool &won, int &guesses)
 			matches++;
 		}
 	}
-	check_win(word, redacted_word, won);
+	checkWin(word, redacted_word, won);
 	if (matches == 0){
 		guesses++;
 		cout << "No occurrences of the letter found!" << endl;
@@ -141,32 +173,32 @@ void guess_letter(string word, string &redacted_word, bool &won, int &guesses)
 		cout << matches << " occurrences of the letter found!" << endl;
 }
 
-void guess_word(string word, string &redacted_word, bool &won, int &guesses)
+void guessWord(string word, string &redacted_word, bool &won, int &guesses)
 {
-	string guess_word = "";
+	string guessWord = "";
 	cout << "Word you are guessing: " << endl;
-	cin >> guess_word;
-	check_win(word, guess_word, won);
+	cin >> guessWord;
+	checkWin(word, guessWord, won);
 	if (won != true) {
 		cout << "Guess was incorrect!" << endl;
 		guesses++;
 	}
 }
 
-void reset_variables(int& guesses, bool& won)
+void resetVariables(int& guesses, bool& won)
 {
 	guesses = 0;
 	won = false;
 }
 
-void play_again(int& choice)
+void playAgain(int& choice)
 {
 	cout << "Do you want to play again? (1) yes (2) no" << endl;
 	cin >> choice;
 	cin.ignore();
 }
 
-void start_game()
+void startGame()
 {
 	string word = "";
 	string redacted_word = "";
@@ -176,40 +208,37 @@ void start_game()
 	bool won = false;
 
 	do {
-		get_word(word); //get word to guess
-		erase_word(word, redacted_word); //redact the word
+		getWord(word); //get word to guess
+		eraseWord(word, redacted_word); //redact the word
 		do {
 			cout << "===============================" << endl;
 			cout << redacted_word << endl;
-			cout << "Guesses left: " << 7 - guesses << endl;
+			cout << "Guesses left: " << NUM_GUESSES - guesses << endl;
 			cout << "===============================" << endl;
-			player_choice(choice);
+			playerChoice(choice);
 			switch (choice) {
 			case 1:
-				guess_letter(word, redacted_word, won, guesses);
+				guessLetter(word, redacted_word, won, guesses);
 				break;
 			case 2:
-				guess_word(word, redacted_word, won, guesses);
+				guessWord(word, redacted_word, won, guesses);
 				break;
 			default:
 				cout << "Not an option!" << endl;
 			}
-		} while (!won || guesses > 7);
-
-		//cout << (won == true ? "You have won! The word was %d", word : "You have lost! The word was %d", word);
-		//cout << word << endl;
+		} while (!won && guesses < NUM_GUESSES);
 
 		cout << "===============================================" << endl;
 		if (won == true)
 			cout << "You have won! The word was " << word << endl;
 		else
 			cout << "You have lost! The word was " << word << endl;
-		play_again(again);
-		reset_variables(guesses, won);
+		playAgain(again);
+		resetVariables(guesses, won);
 	} while (again == 1);
 }
 
 int main()
 {
-	start_game();
+	startGame();
 }
