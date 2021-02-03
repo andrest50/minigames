@@ -13,7 +13,16 @@ void mainMenu();
 int getDifficulty();
 int getInitialNumbers();
 void gameOver(vector<int>, vector<int>);
-void runGame(vector<int>, int, int);
+void updateStats(struct stats&, int, int);
+void printStats(struct stats);
+void runGame(struct stats&, vector<int>, int);
+
+struct stats {
+	int maxEasy = 0;
+	int maxMedium = 0;
+	int maxHard = 0;
+	int gamesPlayed = 0;
+};
 
 void mainMenu(){
 	int option = 1;
@@ -21,17 +30,17 @@ void mainMenu(){
 	int numNumbers = 0;
 	int digits = 0;
 	vector<int> numbers;
+	struct stats my_stats;
 
-	while(option != 2){
+	while(option == 1){
 		cout << "Welcome to the Memory Game!" << endl;
 		cout << "(1) Play - (2) Quit" << endl;
 		cin >> option;
 
 		if(option == 2)
-			return;
+			break;
 
 		difficulty = getDifficulty();
-		numNumbers = getInitialNumbers();
 		numbers.clear();
 		switch (difficulty){
 			case 1:
@@ -44,8 +53,9 @@ void mainMenu(){
 				digits = 3;
 				break;
 		}
-		runGame(numbers, numNumbers, digits);
+		runGame(my_stats, numbers, digits);
 	}
+	printStats(my_stats); //when user quits
 }
 
 int getDifficulty(){
@@ -91,13 +101,37 @@ void gameOver(vector<int> response, vector<int> answer){
 	cout << "----------------------------------------------" << endl;
 }
 
-void runGame(vector<int> numbers, int numNumbers, int digits){
+void updateStats(struct stats& my_stats, int digits, int numNumbers){
+	if(digits == 1 && numNumbers - 1 > my_stats.maxEasy){
+		my_stats.maxEasy = numNumbers - 1;
+	}
+	else if(digits == 2 && numNumbers > my_stats.maxMedium){
+		my_stats.maxMedium = numNumbers - 1;
+	}
+	else if(digits == 3 && numNumbers > my_stats.maxHard){
+		my_stats.maxHard = numNumbers - 1;
+	}
+	my_stats.gamesPlayed++;
+}
+
+void printStats(struct stats my_stats){
+	cout << "----------------------------------------------" << endl;
+	cout << "Your stats:" << endl;
+	cout << "Easy: " << my_stats.maxEasy << endl;
+	cout << "Medium: " << my_stats.maxMedium << endl;
+	cout << "Hard: " << my_stats.maxHard << endl;
+	cout << "Games played: " << my_stats.gamesPlayed << endl;
+}
+
+void runGame(struct stats& my_stats, vector<int> numbers, int digits){
 	int active = 1; //1 - still in game, 0 - game over
 	int value = 0; //for getting random numbers
 	int multiplier = pow(10, digits-1); //for calculating numbers based on difficulty
 	int sleepTime = 3; //time in seconds
 	vector<int> response; //store response numbers
 
+	int numNumbers = getInitialNumbers();
+	int initialNumNumbers = numNumbers;
 	while (active == 1) {
 		cout << "----------------------------------------------" << endl;
 		for (int i = numNumbers - 1; i >= 0; i--){
@@ -131,6 +165,11 @@ void runGame(vector<int> numbers, int numNumbers, int digits){
 	}
 
 	gameOver(response, numbers);
+
+	if(initialNumNumbers == numNumbers)
+		numNumbers = 0;
+
+	updateStats(my_stats, digits, numNumbers);
 }
 
 int main()
