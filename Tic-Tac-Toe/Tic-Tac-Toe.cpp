@@ -122,7 +122,7 @@ void run(char grid[M][N])
 
 			turn++;
 			win = checkWin(grid, noWin);
-			cout << noWin << endl;
+			//cout << noWin << endl;
 		} while (!win && !noWin);
 
 		if (win) {
@@ -160,7 +160,7 @@ bool checkWin(char grid[M][N], bool& noWin)
 				gridNum[i][j] = 3;
 				notFilled++;
 			}
-			cout << "i: " << i << ", j: "<< j << ", num: " << gridNum[i][j] << endl;
+			//cout << "i: " << i << ", j: "<< j << ", num: " << gridNum[i][j] << endl;
 		}
 	}
 
@@ -173,7 +173,6 @@ bool checkWin(char grid[M][N], bool& noWin)
 		((gridNum[2][0] == 2 && gridNum[2][1] == 2 && gridNum[2][2] == 2) || (gridNum[2][0] == 1 && gridNum[2][1] == 1 && gridNum[2][2] == 1)) || //third across
 		((gridNum[0][2] == 2 && gridNum[1][1] == 2 && gridNum[2][0] == 2) || (gridNum[0][2] == 1 && gridNum[1][1] == 1 && gridNum[2][0] == 1))) //second diagonal
 	{
-		cout << "Win." << endl;
 		win = true;
 	}
 

@@ -23,10 +23,6 @@ int main(int argc, char *argv[])
 	cout << "How many points to win?" << endl;
 	cin >> max;
 
-	cout << "==The objective of the game is to save as many coin flips that are heads before any other player==" << endl;
-	cout << "==After each toss, if the toss is heads, the player can choose to save or go for another==" << endl;
-	cout << "==The only way for points to go onto the next round, they must be saved==" << endl;
-	cout << "==If you risk your earned heads for the round and toss a tails, you lose those points==" << endl;
 	int players[6] = { 0, 0, 0, 0, 0, 0 };
 	for (int i = 0; i < 6; i++)
 		players[i] = 0;
